@@ -6,7 +6,7 @@ import {
     Events,
     GatewayIntentBits,
     Collection,
-    Interaction,
+    BaseInteraction,
 } from "discord.js";
 
 declare module "discord.js" {
@@ -23,7 +23,6 @@ const token = process.env.BOT_TOKEN;
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
-
 const commandsPath = path.join(__dirname, "commands");
 const commandFiles = fs
     .readdirSync(commandsPath)
@@ -50,7 +49,7 @@ client.once(Events.ClientReady, (c) => {
 
 client.on(
     Events.InteractionCreate,
-    async (interaction: Interaction): Promise<void> => {
+    async (interaction: BaseInteraction): Promise<void> => {
         if (!interaction.isChatInputCommand()) return;
 
         const command = interaction.client.commands.get(

@@ -3,6 +3,7 @@ import { Events, BaseInteraction } from "discord.js";
 // executes command from client.commands array
 export default {
     name: Events.InteractionCreate,
+
     async execute(interaction: BaseInteraction): Promise<void> {
         if (!interaction.isChatInputCommand()) return;
 

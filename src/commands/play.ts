@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, GuildMember } from "discord.js";
+import { SlashCommandBuilder, GuildMember, CommandInteraction } from "discord.js";
 import {
     createAudioPlayer,
     NoSubscriberBehavior,
@@ -15,7 +15,7 @@ export default {
             option.setName("source").setDescription("source to play from").setRequired(true)
         ),
 
-    async execute(interaction: any) {
+    async execute(interaction: CommandInteraction) {
         // return await interaction.reply("now playing");
         const member = interaction.member as GuildMember;
 
@@ -45,6 +45,6 @@ export default {
         //     setTimeout(() => subscription.unsubscribe(), 5_000);
         // }
 
-        await interaction.reply("now playing");
+        return await interaction.reply("now playing");
     },
 };

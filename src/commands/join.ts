@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, CommandInteraction, GuildMember, Guild } from "discord.js";
+import { SlashCommandBuilder, CommandInteraction, GuildMember } from "discord.js";
 import { joinVoiceChannel } from "@discordjs/voice";
 
 export default {

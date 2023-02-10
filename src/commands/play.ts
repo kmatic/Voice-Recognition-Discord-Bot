@@ -10,8 +10,8 @@ import {
     getVoiceConnection,
     createAudioResource,
 } from "@discordjs/voice";
-import { join } from "path";
 import getYoutubeInfo from "../utils/getYoutubeInfo";
+import ytdl from "ytdl-core-discord";
 
 export default {
     data: new SlashCommandBuilder()
@@ -34,6 +34,8 @@ export default {
 
         if (!url) return await interaction.reply("Could not find the given video/song");
 
+        console.log(url);
+
         // create audio player
         const audioPlayer = createAudioPlayer({
             behaviors: {
@@ -46,9 +48,10 @@ export default {
         });
 
         const subscription = connection.subscribe(audioPlayer);
+        const stream = await ytdl(url, { filter: "audioonly" });
+        const resource = createAudioResource(stream);
 
-        // const resource = createAudioResource(join(__dirname, "example.mp3"));
-        // audioPlayer.play(resource);
+        audioPlayer.play(resource);
 
         return await interaction.reply("now playing");
     },

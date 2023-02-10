@@ -1,6 +1,6 @@
 import axios from "axios";
 
-type YoutubeInfo = {
+export type YoutubeInfo = {
     url: string | null;
     info: Snippet | null;
 };
@@ -38,8 +38,10 @@ export default async function getYoutubeInfo(search: string): Promise<YoutubeInf
     try {
         const response = await axios.get(endpoint);
         const data = response.data.items[0];
-        info = data.snippet;
-        url = `https://www.youtube.com/watch?v=${data.id.videoId}`;
+        if (data) {
+            info = data.snippet;
+            url = `https://www.youtube.com/watch?v=${data.id.videoId}`;
+        }
     } catch (error) {
         console.error(error);
     }

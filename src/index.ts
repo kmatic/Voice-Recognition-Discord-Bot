@@ -7,6 +7,7 @@ import { generateDependencyReport } from "@discordjs/voice";
 declare module "discord.js" {
     interface Client {
         commands: Collection<unknown, any>;
+        queueCollection: Collection<unknown, any>;
     }
 }
 
@@ -19,6 +20,7 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 });
 client.commands = new Collection();
+client.queueCollection = new Collection();
 
 const commandsPath = path.join(__dirname, "commands");
 const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".ts"));

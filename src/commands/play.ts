@@ -4,14 +4,16 @@ import {
     CommandInteraction,
     CommandInteractionOptionResolver,
     EmbedBuilder,
+    Client,
 } from "discord.js";
 import {
     createAudioPlayer,
     NoSubscriberBehavior,
     getVoiceConnection,
     createAudioResource,
+    AudioPlayerStatus,
 } from "@discordjs/voice";
-import getYoutubeInfo from "../utils/getYoutubeInfo";
+import getYoutubeInfo, { YoutubeInfo } from "../utils/getYoutubeInfo";
 import play from "play-dl";
 
 export default {
@@ -25,42 +27,32 @@ export default {
     async execute(interaction: CommandInteraction) {
         const options = interaction.options as CommandInteractionOptionResolver;
         const member = interaction.member as GuildMember;
+        const client = interaction.client as Client;
         const connection = getVoiceConnection(member.guild.id);
 
         if (!connection) return await interaction.reply("Bot is not currently in a channel");
 
         const search = options.getString("search")!;
+        const song = await getYoutubeInfo(search);
 
-        const { url, info } = await getYoutubeInfo(search);
+        if (!song.url) return await interaction.reply("Could not find the given video/song");
 
-        if (!url) return await interaction.reply("Could not find the given video/song");
+        const queue = client.queueCollection.get(member.guild.id);
 
-        console.log(info);
-
-        // create audio player
-        const audioPlayer = createAudioPlayer({
-            behaviors: {
-                noSubscriber: NoSubscriberBehavior.Stop,
-            },
-        });
-
-        audioPlayer.on("error", (error) => {
-            console.error(error);
-        });
-
-        const subscription = connection.subscribe(audioPlayer);
-        const stream = await play.stream(url);
-        const resource = createAudioResource(stream.stream, { inputType: stream.type });
-
-        const embed = createEmbed(info, url);
-
-        audioPlayer.play(resource);
-
-        return await interaction.reply({ embeds: [embed] });
+        if (!queue) {
+            const queueInit = [song];
+            client.queueCollection.set(member.guild.id, queueInit);
+            interaction.reply("Playing soon...");
+            playQueue(interaction, member, queueInit);
+        } else {
+            queue.push(song);
+            interaction.client.queueCollection.set(member.guild.id, queue);
+            return await interaction.reply(`**${song.info?.title}** added to the queue.`);
+        }
     },
 };
 
-function createEmbed(info: any, url: string) {
+function createEmbed(info: any, url: string, requested: string) {
     const templatedEmbed = new EmbedBuilder()
         .setColor(0x2d66d7)
         .setTitle(info.title)
@@ -68,7 +60,50 @@ function createEmbed(info: any, url: string) {
         .setDescription(info.description)
         .setThumbnail(info.thumbnails.default.url)
         .setAuthor({ name: "Now Playing" })
-        .setFooter({ text: "Requested by: " });
+        .setFooter({ text: `Requested by: ${requested}` });
 
     return templatedEmbed;
+}
+
+async function playQueue(
+    interaction: CommandInteraction,
+    member: GuildMember,
+    queue: YoutubeInfo[]
+) {
+    const connection = getVoiceConnection(member.guild.id);
+    const firstSong = queue[0];
+
+    const audioPlayer = createAudioPlayer({
+        behaviors: {
+            noSubscriber: NoSubscriberBehavior.Stop,
+        },
+    });
+
+    connection!.subscribe(audioPlayer);
+    const stream = await play.stream(firstSong.url!);
+    const resource = createAudioResource(stream.stream, { inputType: stream.type });
+    audioPlayer.play(resource);
+
+    audioPlayer.on("error", (error) => {
+        console.error(error);
+    });
+
+    audioPlayer.on(AudioPlayerStatus.Idle, async () => {
+        queue.shift();
+        const nextSong = queue[0];
+        const nextSongResource = await getNextResource(nextSong);
+        audioPlayer.play(nextSongResource);
+
+        const nextEmbed = createEmbed(nextSong.info, nextSong.url!, member.user.tag);
+        interaction.channel!.send({ embeds: [nextEmbed] });
+    });
+
+    const embed = createEmbed(firstSong.info, firstSong.url!, member.user.tag);
+    return await interaction.channel!.send({ embeds: [embed] });
+}
+
+async function getNextResource(nextSong: YoutubeInfo) {
+    const stream = await play.stream(nextSong.url!);
+    const resource = createAudioResource(stream.stream, { inputType: stream.type });
+    return resource;
 }

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, CommandInteraction, GuildMember } from "discord.js";
+import { SlashCommandBuilder, CommandInteraction, GuildMember, userMention } from "discord.js";
 import { joinVoiceChannel, VoiceConnectionStatus } from "@discordjs/voice";
 
 export default {
@@ -6,10 +6,11 @@ export default {
 
     async execute(interaction: CommandInteraction) {
         const member = interaction.member as GuildMember;
+        const user = userMention(member.user.id);
 
         if (!member.voice.channel) {
             return await interaction.reply(
-                `${member.user.tag} must be connected to a voice channel for the bot to join`
+                `${user} must be connected to a voice channel for the bot to join`
             );
         }
 

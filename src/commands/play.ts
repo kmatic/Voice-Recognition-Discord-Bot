@@ -11,7 +11,6 @@ import {
     createAudioResource,
 } from "@discordjs/voice";
 import getYoutubeInfo from "../utils/getYoutubeInfo";
-import ytdl from "ytdl-core-discord";
 import play from "play-dl";
 
 export default {
@@ -31,7 +30,7 @@ export default {
 
         const search = options.getString("search")!;
 
-        const url = await getYoutubeInfo(search);
+        const { url, info } = await getYoutubeInfo(search);
 
         if (!url) return await interaction.reply("Could not find the given video/song");
 

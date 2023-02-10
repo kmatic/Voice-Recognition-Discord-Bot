@@ -12,6 +12,7 @@ import {
 } from "@discordjs/voice";
 import getYoutubeInfo from "../utils/getYoutubeInfo";
 import ytdl from "ytdl-core-discord";
+import play from "play-dl";
 
 export default {
     data: new SlashCommandBuilder()
@@ -48,8 +49,8 @@ export default {
         });
 
         const subscription = connection.subscribe(audioPlayer);
-        const stream = await ytdl(url, { filter: "audioonly" });
-        const resource = createAudioResource(stream);
+        const stream = await play.stream(url);
+        const resource = createAudioResource(stream.stream, { inputType: stream.type });
 
         audioPlayer.play(resource);
 

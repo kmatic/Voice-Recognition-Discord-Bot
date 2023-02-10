@@ -3,7 +3,7 @@ export type YoutubeInfo = {
     info: Snippet | null;
 };
 
-type Snippet = {
+export type Snippet = {
     publishedAt: Date;
     channelId: string;
     title: string;

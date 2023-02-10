@@ -3,7 +3,6 @@ import {
     GuildMember,
     CommandInteraction,
     CommandInteractionOptionResolver,
-    EmbedBuilder,
     Client,
 } from "discord.js";
 import {
@@ -16,6 +15,7 @@ import {
 import getYoutubeInfo from "../utils/getYoutubeInfo";
 import play from "play-dl";
 import { YoutubeInfo } from "../types/YoutubeInfo";
+import { createPlayEmbed, createQueueEmbed } from "../utils/embeds";
 
 export default {
     data: new SlashCommandBuilder()
@@ -48,23 +48,14 @@ export default {
         } else {
             queue.push(song);
             interaction.client.queueCollection.set(member.guild.id, queue);
-            return await interaction.reply(`**${song.info?.title}** added to the queue.`);
+
+            const position = queue.length - 1;
+            const queueEmbed = createQueueEmbed(song.info!, song.url!, position);
+
+            return await interaction.reply({ embeds: [queueEmbed] });
         }
     },
 };
-
-function createEmbed(info: any, url: string, requested: string) {
-    const templatedEmbed = new EmbedBuilder()
-        .setColor(0x2d66d7)
-        .setTitle(info.title)
-        .setURL(url)
-        .setDescription(info.description)
-        .setThumbnail(info.thumbnails.default.url)
-        .setAuthor({ name: "Now Playing" })
-        .setFooter({ text: `Requested by: ${requested}` });
-
-    return templatedEmbed;
-}
 
 async function playQueue(
     interaction: CommandInteraction,
@@ -91,15 +82,21 @@ async function playQueue(
 
     audioPlayer.on(AudioPlayerStatus.Idle, async () => {
         queue.shift();
+
         const nextSong = queue[0];
+
+        if (!nextSong) {
+            return console.log("queue is empty");
+        }
+
         const nextSongResource = await getNextResource(nextSong);
         audioPlayer.play(nextSongResource);
 
-        const nextEmbed = createEmbed(nextSong.info, nextSong.url!, member.user.tag);
+        const nextEmbed = createPlayEmbed(nextSong.info!, nextSong.url!, member.user.id);
         interaction.channel!.send({ embeds: [nextEmbed] });
     });
 
-    const embed = createEmbed(firstSong.info, firstSong.url!, member.user.tag);
+    const embed = createPlayEmbed(firstSong.info!, firstSong.url!, member.user.id);
     return await interaction.channel!.send({ embeds: [embed] });
 }
 

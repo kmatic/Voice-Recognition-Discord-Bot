@@ -38,8 +38,6 @@ export default async function getYoutubeInfo(search: string): Promise<YoutubeInf
     try {
         const response = await axios.get(endpoint);
         const data = response.data.items[0];
-        console.log(data);
-
         info = data.snippet;
         url = `https://www.youtube.com/watch?v=${data.id.videoId}`;
     } catch (error) {

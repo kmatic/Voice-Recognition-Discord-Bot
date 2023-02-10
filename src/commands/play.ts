@@ -3,6 +3,7 @@ import {
     GuildMember,
     CommandInteraction,
     CommandInteractionOptionResolver,
+    EmbedBuilder,
 } from "discord.js";
 import {
     createAudioPlayer,
@@ -34,7 +35,7 @@ export default {
 
         if (!url) return await interaction.reply("Could not find the given video/song");
 
-        console.log(url);
+        console.log(info);
 
         // create audio player
         const audioPlayer = createAudioPlayer({
@@ -51,8 +52,23 @@ export default {
         const stream = await play.stream(url);
         const resource = createAudioResource(stream.stream, { inputType: stream.type });
 
+        const embed = createEmbed(info, url);
+
         audioPlayer.play(resource);
 
-        return await interaction.reply("now playing");
+        return await interaction.reply({ embeds: [embed] });
     },
 };
+
+function createEmbed(info: any, url: string) {
+    const templatedEmbed = new EmbedBuilder()
+        .setColor(0x2d66d7)
+        .setTitle(info.title)
+        .setURL(url)
+        .setDescription(info.description)
+        .setThumbnail(info.thumbnails.default.url)
+        .setAuthor({ name: "Now Playing" })
+        .setFooter({ text: "Requested by: " });
+
+    return templatedEmbed;
+}

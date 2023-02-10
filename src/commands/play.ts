@@ -13,8 +13,9 @@ import {
     createAudioResource,
     AudioPlayerStatus,
 } from "@discordjs/voice";
-import getYoutubeInfo, { YoutubeInfo } from "../utils/getYoutubeInfo";
+import getYoutubeInfo from "../utils/getYoutubeInfo";
 import play from "play-dl";
+import { YoutubeInfo } from "../types/YoutubeInfo";
 
 export default {
     data: new SlashCommandBuilder()

@@ -1,29 +1,5 @@
 import axios from "axios";
-
-export type YoutubeInfo = {
-    url: string | null;
-    info: Snippet | null;
-};
-
-type Snippet = {
-    publishedAt: Date;
-    channelId: string;
-    title: string;
-    description: string;
-    channelTitle: string;
-    liveBroadcastContent: string;
-    thumbnails: {
-        default: Thumbnail;
-        medium: Thumbnail;
-        high: Thumbnail;
-    };
-};
-
-type Thumbnail = {
-    url: string;
-    width: number;
-    height: number;
-};
+import { YoutubeInfo } from "src/types/YoutubeInfo";
 
 // this util function hits the youtube data api to search for a youtube video matching the input given to the bot (works with direct urls as well)
 export default async function getYoutubeInfo(search: string): Promise<YoutubeInfo> {
@@ -32,8 +8,8 @@ export default async function getYoutubeInfo(search: string): Promise<YoutubeInf
 
     const endpoint = `https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&type=video&part=snippet&maxResults=1&q=${query}`;
 
-    let url: string | null = null;
-    let info: Snippet | null = null;
+    let url = null;
+    let info = null;
 
     try {
         const response = await axios.get(endpoint);

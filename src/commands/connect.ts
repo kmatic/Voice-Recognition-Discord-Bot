@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, CommandInteraction, GuildMember, userMention } from "discord.js";
-import { joinVoiceChannel, VoiceConnectionStatus } from "@discordjs/voice";
+import { joinVoiceChannel, VoiceConnectionStatus, entersState } from "@discordjs/voice";
 
 export default {
     data: new SlashCommandBuilder().setName("connect").setDescription("Connects to voice channel"),
@@ -21,8 +21,22 @@ export default {
             adapterCreator: member.voice.channel.guild.voiceAdapterCreator,
         });
 
+        // register connection event listeners
         connection.on(VoiceConnectionStatus.Ready, () => {
             console.log("The connection has entered the Ready state - ready to play audio!");
+        });
+
+        connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+            try {
+                await Promise.race([
+                    entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+                    entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+                ]);
+                // Seems to be reconnecting to a new channel - ignore disconnect
+            } catch (error) {
+                // Seems to be a real disconnect which SHOULDN'T be recovered from
+                connection.destroy();
+            }
         });
 
         return await interaction.reply(`Bot has joined the channel ${member.voice.channel.name}`);

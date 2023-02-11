@@ -9,13 +9,12 @@ import {
     createAudioPlayer,
     NoSubscriberBehavior,
     getVoiceConnection,
-    createAudioResource,
     AudioPlayerStatus,
 } from "@discordjs/voice";
 import getYoutubeInfo from "../utils/getYoutubeInfo";
-import play from "play-dl";
 import { YoutubeInfo } from "../types/YoutubeInfo";
 import { createPlayEmbed, createQueueEmbed } from "../utils/embeds";
+import getNextResource from "../utils/getNextResource";
 
 export default {
     data: new SlashCommandBuilder()
@@ -43,7 +42,7 @@ export default {
         if (!queue) {
             const queueInit = [song];
             client.queueCollection.set(member.guild.id, queueInit);
-            interaction.reply("Playing soon...");
+            interaction.reply({ content: "Audio player firing up...", ephemeral: true });
             playQueue(interaction, member, queueInit);
         } else {
             queue.push(song);
@@ -72,8 +71,7 @@ async function playQueue(
     });
 
     connection!.subscribe(audioPlayer);
-    const stream = await play.stream(firstSong.url!);
-    const resource = createAudioResource(stream.stream, { inputType: stream.type });
+    const resource = await getNextResource(firstSong);
     audioPlayer.play(resource);
 
     audioPlayer.on("error", (error) => {
@@ -82,11 +80,13 @@ async function playQueue(
 
     audioPlayer.on(AudioPlayerStatus.Idle, async () => {
         queue.shift();
-
         const nextSong = queue[0];
 
         if (!nextSong) {
-            return console.log("queue is empty");
+            console.log("queue is empty");
+            audioPlayer.stop();
+            interaction.client.queueCollection.delete(member.guild.id);
+            return;
         }
 
         const nextSongResource = await getNextResource(nextSong);
@@ -98,10 +98,4 @@ async function playQueue(
 
     const embed = createPlayEmbed(firstSong.info!, firstSong.url!, member.user.id);
     return await interaction.channel!.send({ embeds: [embed] });
-}
-
-async function getNextResource(nextSong: YoutubeInfo) {
-    const stream = await play.stream(nextSong.url!);
-    const resource = createAudioResource(stream.stream, { inputType: stream.type });
-    return resource;
 }

@@ -6,7 +6,7 @@ import { generateDependencyReport } from "@discordjs/voice";
 
 declare module "discord.js" {
     interface Client {
-        commands: Collection<unknown, any>;
+        textCommands: Collection<unknown, any>;
         queueCollection: Collection<unknown, any>;
     }
 }
@@ -19,21 +19,21 @@ const token = process.env.BOT_TOKEN;
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 });
-client.commands = new Collection();
+client.textCommands = new Collection();
 client.queueCollection = new Collection();
 
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".ts"));
+const textCommandsPath = path.join(__dirname, "commands/text");
+const textCommandFiles = fs.readdirSync(textCommandsPath).filter((file) => file.endsWith(".ts"));
 
 const eventsPath = path.join(__dirname, "events");
 const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith(".ts"));
 
 // register slash commands
-for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
+for (const file of textCommandFiles) {
+    const filePath = path.join(textCommandsPath, file);
     const command = require(filePath).default;
     if ("data" in command && "execute" in command) {
-        client.commands.set(command.data.name, command);
+        client.textCommands.set(command.data.name, command);
     } else {
         console.log(
             `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`

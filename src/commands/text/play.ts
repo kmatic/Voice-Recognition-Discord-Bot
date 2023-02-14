@@ -11,10 +11,10 @@ import {
     getVoiceConnection,
     AudioPlayerStatus,
 } from "@discordjs/voice";
-import getYoutubeInfo from "../utils/getYoutubeInfo";
-import { YoutubeInfo } from "../types/YoutubeInfo";
-import { createPlayEmbed, createQueueEmbed } from "../utils/embeds";
-import getNextResource from "../utils/getNextResource";
+import getYoutubeInfo from "../../utils/getYoutubeInfo";
+import { YoutubeInfo } from "../../types/YoutubeInfo";
+import { createPlayEmbed, createQueueEmbed } from "../../utils/embeds";
+import getNextResource from "../../utils/getNextResource";
 
 export default {
     data: new SlashCommandBuilder()

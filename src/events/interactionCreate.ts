@@ -7,7 +7,7 @@ export default {
     async execute(interaction: BaseInteraction): Promise<void> {
         if (!interaction.isChatInputCommand()) return;
 
-        const command = interaction.client.commands.get(interaction.commandName);
+        const command = interaction.client.textCommands.get(interaction.commandName);
 
         if (!command) {
             console.error(`No commands match ${interaction.commandName} was found.`);

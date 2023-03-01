@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, CommandInteraction, GuildMember, Client } from "discord.js";
 import { getVoiceConnection } from "@discordjs/voice";
+import { NotUserChannel, NotBotChannel } from "../../utils/responses";
 
 export default {
     data: new SlashCommandBuilder()
@@ -12,7 +13,10 @@ export default {
 
         const connection = getVoiceConnection(member.guild.id);
 
-        if (!connection) return await interaction.reply("Bot is not currently in a channel");
+        if (!member.voice.channel) return await NotUserChannel(interaction);
+        if (!connection || connection.joinConfig.channelId !== member.voice.channelId) {
+            return await NotBotChannel(interaction);
+        }
 
         connection.destroy(); // destroys voice connection
         client.queueCollection.delete(member.guild.id); // clears song queue for guildId

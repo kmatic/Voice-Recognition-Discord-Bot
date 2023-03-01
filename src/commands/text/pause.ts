@@ -1,5 +1,6 @@
 import { getVoiceConnection, VoiceConnectionReadyState } from "@discordjs/voice";
 import { CommandInteraction, GuildMember, SlashCommandBuilder } from "discord.js";
+import { NotUserChannel, NotBotChannel, NotBotPlaying } from "../../utils/responses";
 
 export default {
     data: new SlashCommandBuilder().setName("pause").setDescription("Pause bot audio"),
@@ -7,21 +8,16 @@ export default {
     async execute(interaction: CommandInteraction) {
         const member = interaction.member as GuildMember;
 
-        if (!member.voice.channel) {
-            return await interaction.reply("You must be in a channel to use this command");
-        }
-
         const connection = getVoiceConnection(member.guild.id);
 
+        if (!member.voice.channel) return await NotUserChannel(interaction);
         if (!connection || connection.joinConfig.channelId !== member.voice.channelId) {
-            return await interaction.reply("The Bot is not connected to this voice channel");
+            return await NotBotChannel(interaction);
         }
 
         const state = connection.state as VoiceConnectionReadyState;
 
-        if (!state.subscription) {
-            return await interaction.reply("The bot is not currently playing anything");
-        }
+        if (!state.subscription) return await NotBotPlaying(interaction);
 
         state.subscription.player.pause();
         return await interaction.reply("Audio has been paused");

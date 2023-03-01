@@ -10,11 +10,15 @@ import {
     NoSubscriberBehavior,
     getVoiceConnection,
     AudioPlayerStatus,
+    joinVoiceChannel,
+    VoiceConnectionStatus,
+    entersState,
 } from "@discordjs/voice";
 import getYoutubeInfo from "../../utils/getYoutubeInfo";
 import { YoutubeInfo } from "../../types/YoutubeInfo";
 import { createPlayEmbed, createQueueEmbed } from "../../utils/embeds";
 import getNextResource from "../../utils/getNextResource";
+import { NotUserChannel, NotBotChannel } from "../../utils/responses";
 
 export default {
     data: new SlashCommandBuilder()
@@ -30,7 +34,37 @@ export default {
         const client = interaction.client as Client;
         const connection = getVoiceConnection(member.guild.id);
 
-        if (!connection) return await interaction.reply("Bot is not currently in a channel");
+        if (!member.voice.channel) return await NotUserChannel(interaction);
+        if (connection && connection.joinConfig.channelId !== member.voice.channelId) {
+            return await NotBotChannel(interaction);
+        }
+
+        if (!connection) {
+            try {
+                // join voice channel user is in
+                const connection = joinVoiceChannel({
+                    channelId: member.voice.channel.id,
+                    guildId: member.voice.channel.guild.id,
+                    adapterCreator: member.voice.channel.guild.voiceAdapterCreator,
+                });
+
+                // register connection event listeners
+                connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+                    try {
+                        await Promise.race([
+                            entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+                            entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+                        ]);
+                        // Seems to be reconnecting to a new channel - ignore disconnect
+                    } catch (error) {
+                        // Seems to be a real disconnect which SHOULDN'T be recovered from
+                        connection.destroy();
+                    }
+                });
+            } catch (error) {
+                interaction.reply(`**There was an error connecting**`);
+            }
+        }
 
         const search = options.getString("search")!;
         const song = await getYoutubeInfo(search);

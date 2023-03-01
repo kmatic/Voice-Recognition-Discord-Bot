@@ -8,6 +8,7 @@ declare module "discord.js" {
     interface Client {
         textCommands: Collection<unknown, any>;
         queueCollection: Collection<unknown, any>;
+        listenConnection: Collection<unknown, any>;
     }
 }
 
@@ -21,6 +22,7 @@ const client = new Client({
 });
 client.textCommands = new Collection();
 client.queueCollection = new Collection();
+client.listenConnection = new Collection();
 
 const textCommandsPath = path.join(__dirname, "commands/text");
 const textCommandFiles = fs.readdirSync(textCommandsPath).filter((file) => file.endsWith(".ts"));

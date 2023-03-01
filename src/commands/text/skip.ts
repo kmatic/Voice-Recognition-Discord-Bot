@@ -2,6 +2,7 @@ import { Client, CommandInteraction, GuildMember, SlashCommandBuilder } from "di
 import { getVoiceConnection, VoiceConnectionReadyState } from "@discordjs/voice";
 import getNextResource from "../../utils/getNextResource";
 import { createPlayEmbed } from "../../utils/embeds";
+import { NotUserChannel, NotBotChannel, NotBotPlaying } from "../../utils/responses";
 
 export default {
     data: new SlashCommandBuilder().setName("skip").setDescription("Skips a song"),
@@ -11,19 +12,14 @@ export default {
         const member = interaction.member as GuildMember;
         const connection = getVoiceConnection(member.guild.id);
 
-        if (!member.voice.channel) {
-            return await interaction.reply("You must be in a channel to use this command");
-        }
-
+        if (!member.voice.channel) return await NotUserChannel(interaction);
         if (!connection || connection.joinConfig.channelId !== member.voice.channelId) {
-            return await interaction.reply("The Bot is not connected to this voice channel");
+            return await NotBotChannel(interaction);
         }
 
         const state = connection.state as VoiceConnectionReadyState;
 
-        if (!state.subscription) {
-            return await interaction.reply("The bot is not currently playing anything");
-        }
+        if (!state.subscription) return await NotBotPlaying(interaction);
 
         const queue = client.queueCollection.get(member.guild.id);
         queue.shift();

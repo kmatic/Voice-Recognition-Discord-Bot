@@ -3,7 +3,7 @@ import { getVoiceConnection, VoiceConnectionReadyState } from "@discordjs/voice"
 import { NotUserChannel, NotBotChannel, NotBotPlaying } from "../../utils/responses";
 
 export default {
-    data: new SlashCommandBuilder().setName("unpause").setDescription("Resumes bot audio"),
+    data: new SlashCommandBuilder().setName("resume").setDescription("Resumes bot audio"),
 
     async execute(interaction: CommandInteraction) {
         const member = interaction.member as GuildMember;
@@ -17,9 +17,12 @@ export default {
 
         const state = connection.state as VoiceConnectionReadyState;
 
-        if (!state.subscription) return await NotBotPlaying(interaction);
+        if (state.subscription?.player.state.status !== "paused") {
+            return await NotBotPlaying(interaction);
+        }
 
         state.subscription.player.unpause();
-        return await interaction.reply("Audio has been resumed");
+
+        return await interaction.reply("**Audio has been resumed**");
     },
 };

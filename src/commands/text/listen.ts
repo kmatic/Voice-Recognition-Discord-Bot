@@ -3,6 +3,7 @@ import { joinVoiceChannel, VoiceConnectionStatus, entersState } from "@discordjs
 import { NotUserChannel } from "../../utils/responses";
 import createListeningStream from "../../utils/createListeningStream";
 import transcribeAudio from "../../utils/transcribeAudio";
+import dispatchVoiceCommand from "../voice/dispatchVoiceCommand";
 
 export default {
     data: new SlashCommandBuilder()
@@ -49,6 +50,22 @@ export default {
             }
         });
 
+        connection.on("stateChange", (oldState, newState) => {
+            console.log(
+                "join",
+                "Connection state change from",
+                oldState.status,
+                "to",
+                newState.status
+            );
+            if (
+                oldState.status === VoiceConnectionStatus.Ready &&
+                newState.status === VoiceConnectionStatus.Connecting
+            ) {
+                connection.configureNetworking();
+            }
+        });
+
         const receiver = connection.receiver;
         client.listenConnection.set(member.guild.id, member.user.id);
 
@@ -57,7 +74,7 @@ export default {
             if (userId === client.listenConnection.get(member.guild.id)) {
                 const inputAudio = (await createListeningStream(receiver, userId)) as Buffer;
                 const transcription = await transcribeAudio(inputAudio);
-                // if (transcription) dispatchVoiceCommand();
+                if (transcription) dispatchVoiceCommand(transcription, interaction);
             }
         });
 

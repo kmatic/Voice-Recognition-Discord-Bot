@@ -19,9 +19,12 @@ export default {
 
         const state = connection.state as VoiceConnectionReadyState;
 
-        if (!state.subscription) return await NotBotPlaying(interaction);
+        if (!state.subscription?.player.state.status) return await NotBotPlaying(interaction);
 
         const queue = client.queueCollection.get(member.guild.id);
+
+        if (!queue) return await interaction.reply(`**There are no songs to skip**`);
+
         queue.shift();
         const nextSong = queue[0];
 

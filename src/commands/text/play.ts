@@ -6,19 +6,15 @@ import {
     Client,
 } from "discord.js";
 import {
-    createAudioPlayer,
-    NoSubscriberBehavior,
     getVoiceConnection,
-    AudioPlayerStatus,
     joinVoiceChannel,
     VoiceConnectionStatus,
     entersState,
 } from "@discordjs/voice";
 import getYoutubeInfo from "../../utils/getYoutubeInfo";
-import { YoutubeInfo } from "../../types/YoutubeInfo";
-import { createPlayEmbed, createQueueEmbed } from "../../utils/embeds";
-import getNextResource from "../../utils/getNextResource";
+import { createQueueEmbed } from "../../utils/embeds";
 import { NotUserChannel, NotBotChannel } from "../../utils/responses";
+import playQueue from "../../utils/playQueue";
 
 export default {
     data: new SlashCommandBuilder()
@@ -61,6 +57,22 @@ export default {
                         connection.destroy();
                     }
                 });
+
+                connection.on("stateChange", (oldState, newState) => {
+                    console.log(
+                        "join",
+                        "Connection state change from",
+                        oldState.status,
+                        "to",
+                        newState.status
+                    );
+                    if (
+                        oldState.status === VoiceConnectionStatus.Ready &&
+                        newState.status === VoiceConnectionStatus.Connecting
+                    ) {
+                        connection.configureNetworking();
+                    }
+                });
             } catch (error) {
                 interaction.reply(`**There was an error connecting**`);
             }
@@ -89,47 +101,3 @@ export default {
         }
     },
 };
-
-async function playQueue(
-    interaction: CommandInteraction,
-    member: GuildMember,
-    queue: YoutubeInfo[]
-) {
-    const connection = getVoiceConnection(member.guild.id);
-    const firstSong = queue[0];
-
-    const audioPlayer = createAudioPlayer({
-        behaviors: {
-            noSubscriber: NoSubscriberBehavior.Stop,
-        },
-    });
-
-    connection!.subscribe(audioPlayer);
-    const resource = await getNextResource(firstSong);
-    audioPlayer.play(resource);
-
-    audioPlayer.on("error", (error) => {
-        console.error(error);
-    });
-
-    audioPlayer.on(AudioPlayerStatus.Idle, async () => {
-        queue.shift();
-        const nextSong = queue[0];
-
-        if (!nextSong) {
-            console.log("queue is empty");
-            audioPlayer.stop();
-            interaction.client.queueCollection.delete(member.guild.id);
-            return;
-        }
-
-        const nextSongResource = await getNextResource(nextSong);
-        audioPlayer.play(nextSongResource);
-
-        const nextEmbed = createPlayEmbed(nextSong.info!, nextSong.url!, member.user.id);
-        interaction.channel!.send({ embeds: [nextEmbed] });
-    });
-
-    const embed = createPlayEmbed(firstSong.info!, firstSong.url!, member.user.id);
-    return await interaction.channel!.send({ embeds: [embed] });
-}

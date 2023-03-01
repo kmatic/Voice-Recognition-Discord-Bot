@@ -20,7 +20,8 @@ export default {
 
         connection.destroy(); // destroys voice connection
         client.queueCollection.delete(member.guild.id); // clears song queue for guildId
+        client.listenConnection.delete(member.guild.id); // clears any listening connections
 
-        return await interaction.reply(`Bot has disconnected from the channel`);
+        return await interaction.reply(`**Bot has disconnected from the channel**`);
     },
 };

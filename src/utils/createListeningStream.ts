@@ -1,10 +1,14 @@
-import { EndBehaviorType, VoiceReceiver } from "@discordjs/voice";
+import { VoiceReceiver, EndBehaviorType } from "@discordjs/voice";
 import { OpusEncoder } from "@discordjs/opus";
+import detectHotword from "./detectHotword";
+import prism from "prism-media";
 
 export default function createListeningStream(receiver: VoiceReceiver, userId: string) {
     return new Promise((resolve, reject) => {
         const encoder = new OpusEncoder(16000, 1);
-        const buffer: Buffer[] = [];
+        const inputBuffer = [];
+        const outputBuffer: Buffer[] = [];
+        let hotwordDetected = false;
 
         // creates a readable stream of opus packets from user voice
         const opusStream = receiver.subscribe(userId, {
@@ -14,17 +18,36 @@ export default function createListeningStream(receiver: VoiceReceiver, userId: s
             },
         });
 
-        opusStream.on("data", (chunk) => {
-            buffer.push(encoder.decode(chunk));
+        const decodedStream = new prism.opus.Decoder({ rate: 16000, channels: 1, frameSize: 640 });
+
+        opusStream.pipe(decodedStream);
+
+        decodedStream.on("data", (chunk) => {
+            const decodedChunk = chunk;
+
+            if (!hotwordDetected) {
+                inputBuffer.push(decodedChunk);
+                hotwordDetected = detectHotword(decodedChunk);
+            }
+
+            if (hotwordDetected) {
+                outputBuffer.push(decodedChunk);
+            }
         });
 
-        opusStream.on("end", () => {
-            const inputAudio = Buffer.concat(buffer);
-            resolve(inputAudio);
+        decodedStream.on("end", () => {
+            const inputAudio = Buffer.concat(outputBuffer);
+
+            if (hotwordDetected) {
+                // hotwordDetected = false;
+                resolve(inputAudio);
+            }
+
+            resolve([]);
         });
 
-        opusStream.on("error", (error) => {
-            reject([]);
-        });
+        // decodedStream.on("error", (error) => {
+        //     reject(new Error("something went wrong"));
+        // });
     });
 }

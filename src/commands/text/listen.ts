@@ -17,7 +17,7 @@ export default {
 
         if (!member.voice.channel) return await NotUserChannel(interaction);
         // check if bot is already listening to a user
-        if (existingListen) return interaction.reply(`**Already listening to a user**`);
+        if (existingListen) return await interaction.reply(`**Already listening to a user**`);
 
         // join voice channel user is in
         const connection = joinVoiceChannel({
@@ -67,13 +67,20 @@ export default {
         });
 
         const receiver = connection.receiver;
+
         client.listenConnection.set(member.guild.id, member.user.id);
 
         receiver.speaking.on("start", async (userId) => {
             console.log(`User ${userId} started speaking`);
             if (userId === client.listenConnection.get(member.guild.id)) {
+                let transcription = "";
+
                 const inputAudio = (await createListeningStream(receiver, userId)) as Buffer;
-                const transcription = await transcribeAudio(inputAudio);
+
+                if (inputAudio) {
+                    transcription = await transcribeAudio(inputAudio);
+                }
+
                 if (transcription) dispatchVoiceCommand(transcription, interaction);
             }
         });

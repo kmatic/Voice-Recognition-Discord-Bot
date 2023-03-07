@@ -24,7 +24,7 @@ export default {
         client.porcupineInstance.delete(member.guild.id); // clears porcupine instance after releasing resources
         client.gcSpeechInstance.delete(member.guild.id); // clears gcSpeech instance
 
-        const embed = createBasicEmbed(`**Bot has disconnected from the channel**`);
+        const embed = createBasicEmbed(`Bot has disconnected from the channel`);
         return await interaction.channel!.send({ embeds: [embed] });
     },
 };

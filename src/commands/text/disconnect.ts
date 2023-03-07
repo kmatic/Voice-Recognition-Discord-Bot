@@ -16,12 +16,12 @@ export default {
 
         if (!member.voice.channel) {
             embed = createBasicEmbed(
-                "**You must be connected to a voice channel to use this command**"
+                "You must be connected to a voice channel to use this command"
             );
             return await interaction.reply({ embeds: [embed] });
         }
         if (!connection || connection.joinConfig.channelId !== member.voice.channelId) {
-            embed = createBasicEmbed("**Bot is not currently connected to this voice channel**");
+            embed = createBasicEmbed("Bot is not currently connected to this voice channel");
             return await interaction.reply({ embeds: [embed] });
         }
 
@@ -36,7 +36,7 @@ export default {
         client.porcupineInstance.delete(member.guild.id); // clears porcupine instance after releasing resources
         client.gcSpeechInstance.delete(member.guild.id); // clears gcSpeech instance
 
-        embed = createBasicEmbed(`**Bot has disconnected from the channel**`);
+        embed = createBasicEmbed(`Bot has disconnected from the channel`);
         return await interaction.reply({ embeds: [embed] });
     },
 };

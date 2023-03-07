@@ -15,14 +15,14 @@ export default {
         const client = interaction.client as Client;
 
         if (search === "") {
-            embed = createBasicEmbed(`**Did not receive a song to search**`);
+            embed = createBasicEmbed(`Did not receive a song to search`);
             return await interaction.channel!.send({ embeds: [embed] });
         }
 
         const song = await getYoutubeInfo(search);
 
         if (!song.url) {
-            embed = createBasicEmbed(`**Did not receive a song to search**`);
+            embed = createBasicEmbed(`Did not receive a song to search`);
             return await interaction.channel!.send({ embeds: [embed] });
         }
 
@@ -31,7 +31,7 @@ export default {
         if (!queue) {
             const queueInit = [song];
             client.queueCollection.set(member.guild.id, queueInit);
-            interaction.channel!.send("**Audio player firing up...**");
+            interaction.channel!.send("Audio player firing up...");
             playQueue(interaction, member, queueInit);
         } else {
             queue.push(song);

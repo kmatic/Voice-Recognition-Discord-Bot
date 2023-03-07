@@ -14,26 +14,26 @@ export default {
 
         if (!member.voice.channel) {
             embed = createBasicEmbed(
-                "**You must be connected to a voice channel to use this command**"
+                "You must be connected to a voice channel to use this command"
             );
             return await interaction.reply({ embeds: [embed] });
         }
         if (!connection || connection.joinConfig.channelId !== member.voice.channelId) {
-            embed = createBasicEmbed("**Bot is not currently connected to this voice channel**");
+            embed = createBasicEmbed("Bot is not currently connected to this voice channel");
             return await interaction.reply({ embeds: [embed] });
         }
 
         const state = connection.state as VoiceConnectionReadyState;
 
         if (!state.subscription?.player.state.status) {
-            embed = createBasicEmbed("**Bot is not currently playing anything!**");
+            embed = createBasicEmbed("Bot is not currently playing anything!");
             return await interaction.reply({ embeds: [embed] });
         }
 
         const queue = client.queueCollection.get(member.guild.id);
 
         if (!queue) {
-            embed = createBasicEmbed(`**There are no songs to skip**`);
+            embed = createBasicEmbed(`There are no songs to skip`);
             return await interaction.reply({ embeds: [embed] });
         }
 
@@ -44,7 +44,7 @@ export default {
             console.log("queue is empty");
             state.subscription.player.stop();
             interaction.client.queueCollection.delete(member.guild.id);
-            embed = createBasicEmbed("**Song queue is now empty**");
+            embed = createBasicEmbed("Song queue is now empty");
             return await interaction.reply({ embeds: [embed] });
         }
 

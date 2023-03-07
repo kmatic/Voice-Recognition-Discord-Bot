@@ -20,7 +20,7 @@ export default {
 
         if (!member.voice.channel) {
             embed = createBasicEmbed(
-                "**You must be connected to a voice channel to use this command**"
+                "You must be connected to a voice channel to use this command"
             );
             return await interaction.reply({ embeds: [embed] });
         }
@@ -107,7 +107,7 @@ export default {
         });
 
         embed = createBasicEmbed(
-            `**Bot has joined the channel ${member.voice.channel.name} and is now listening to ${member.user.tag} for commands**`
+            `Bot has joined the channel ${member.voice.channel.name} and is now listening to ${member.user.tag} for commands`
         );
 
         await interaction.reply({

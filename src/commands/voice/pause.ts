@@ -16,13 +16,13 @@ export default {
         const state = connection!.state as VoiceConnectionReadyState;
 
         if (state.subscription?.player.state.status !== "playing") {
-            embed = createBasicEmbed("**Bot is not currently playing anything!**");
+            embed = createBasicEmbed("Bot is not currently playing anything!");
             return await interaction.channel!.send({ embeds: [embed] });
         }
 
         state.subscription.player.pause();
 
-        embed = embed = createBasicEmbed("**Audio has been paused**");
+        embed = embed = createBasicEmbed("Audio has been paused");
         return await interaction.channel!.send({ embeds: [embed] });
     },
 };

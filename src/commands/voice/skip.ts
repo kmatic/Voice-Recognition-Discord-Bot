@@ -17,14 +17,14 @@ export default {
         const state = connection!.state as VoiceConnectionReadyState;
 
         if (!state.subscription?.player.state.status) {
-            embed = createBasicEmbed("**Bot is not currently playing anything!**");
+            embed = createBasicEmbed("Bot is not currently playing anything!");
             return await interaction.channel!.send({ embeds: [embed] });
         }
 
         const queue = client.queueCollection.get(member.guild.id);
 
         if (!queue) {
-            embed = createBasicEmbed(`**There are no songs to skip**`);
+            embed = createBasicEmbed(`There are no songs to skip`);
             return await interaction.channel!.send({ embeds: [embed] });
         }
 
@@ -35,7 +35,7 @@ export default {
             console.log("queue is empty");
             state.subscription.player.stop();
             interaction.client.queueCollection.delete(member.guild.id);
-            embed = createBasicEmbed("**Song queue is now empty**");
+            embed = createBasicEmbed("Song queue is now empty");
             return await interaction.channel!.send({ embeds: [embed] });
         }
 

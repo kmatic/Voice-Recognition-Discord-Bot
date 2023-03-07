@@ -13,25 +13,25 @@ export default {
 
         if (!member.voice.channel) {
             embed = createBasicEmbed(
-                "**You must be connected to a voice channel to use this command**"
+                "You must be connected to a voice channel to use this command"
             );
             return await interaction.reply({ embeds: [embed] });
         }
         if (!connection || connection.joinConfig.channelId !== member.voice.channelId) {
-            embed = createBasicEmbed("**Bot is not currently connected to this voice channel**");
+            embed = createBasicEmbed("Bot is not currently connected to this voice channel");
             return await interaction.reply({ embeds: [embed] });
         }
 
         const state = connection.state as VoiceConnectionReadyState;
 
         if (state.subscription?.player.state.status !== "paused") {
-            embed = createBasicEmbed("**Bot is not currently playing anything!**");
+            embed = createBasicEmbed("Bot is not currently playing anything!");
             return await interaction.reply({ embeds: [embed] });
         }
 
         state.subscription.player.unpause();
 
-        embed = createBasicEmbed("**Audio has been resumed**");
+        embed = createBasicEmbed("Audio has been resumed");
         return await interaction.reply({ embeds: [embed] });
     },
 };

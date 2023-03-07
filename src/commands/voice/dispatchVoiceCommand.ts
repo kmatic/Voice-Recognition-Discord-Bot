@@ -11,9 +11,7 @@ export default async function dispatchVoiceCommand(
     const command = interaction.client.voiceCommands.get(transcriptionCommand);
 
     if (!command) {
-        const embed = createBasicEmbed(
-            `**No commands matching ${transcriptionCommand} was found**`
-        );
+        const embed = createBasicEmbed(`No commands matching ${transcriptionCommand} was found`);
         console.error(`No commands matching ${transcriptionCommand} was found.`);
         return await interaction.channel!.send({ embeds: [embed] });
     }

@@ -1,10 +1,10 @@
 import { SlashCommandBuilder, CommandInteraction, GuildMember, Client } from "discord.js";
 import { joinVoiceChannel, VoiceConnectionStatus, entersState } from "@discordjs/voice";
+import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
+import speech from "@google-cloud/speech";
 import createRecognitionStream from "../../utils/createRecognitionStream";
 import transcribeAudio from "../../utils/transcribeAudio";
 import dispatchVoiceCommand from "../voice/dispatchVoiceCommand";
-import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
-import speech from "@google-cloud/speech";
 import { createBasicEmbed } from "../../utils/embeds";
 
 export default {
@@ -125,7 +125,7 @@ export default {
 function initPorcupine() {
     // instantiate porcupine (hotword detection)
     const accessKey = process.env.PICOVOICE_ACCESS_KEY as string;
-    const porcupine = new Porcupine(accessKey, [BuiltinKeyword.BUMBLEBEE], [0.75]);
+    const porcupine = new Porcupine(accessKey, [BuiltinKeyword.BUMBLEBEE], [0.8]);
 
     return porcupine;
 }

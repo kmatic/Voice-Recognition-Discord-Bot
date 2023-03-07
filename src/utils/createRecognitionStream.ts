@@ -12,10 +12,11 @@ export default function createRecognitionStream(
     interaction: CommandInteraction
 ) {
     return new Promise((resolve, reject) => {
-        const FRAME_LENGTH = porcupine.frameLength;
+        const FRAME_LENGTH = porcupine.frameLength; // required frame length for porcupine to process audio data
+        const detectedBuffer: Buffer[] = []; // receives buffer data once hotword is detected
+
         let hotwordDetected = false;
-        let inputBuffer: any = [];
-        const outputBuffer: Buffer[] = [];
+        let frames: any = [];
 
         // creates a readable stream of opus packets from user voice
         const opusStream = receiver.subscribe(userId, {
@@ -25,42 +26,39 @@ export default function createRecognitionStream(
             },
         });
 
+        // decodes opus stream to pcm stream
         const decodedStream = new prism.opus.Decoder({ rate: 16000, channels: 1, frameSize: 640 });
-
         opusStream.pipe(decodedStream);
 
         decodedStream.on("data", (chunk) => {
             if (!hotwordDetected) {
-                let newFrames16 = new Array(chunk.length / 2);
-                for (let i = 0; i < chunk.length; i += 2) {
-                    newFrames16[i / 2] = chunk.readInt16LE(i);
+                const int16Array = bufferToInt16(chunk);
+
+                frames = frames.concat(int16Array); // concatenate incoming data to frames
+                const normalizedFrames = chunkArray(frames, FRAME_LENGTH);
+
+                // stores partial frame for next iteration to avoid discarding of audio data
+                if (normalizedFrames[normalizedFrames.length - 1].length !== FRAME_LENGTH) {
+                    frames = normalizedFrames.pop();
                 }
 
-                inputBuffer = inputBuffer.concat(newFrames16);
-                let frames = chunkArray(inputBuffer, FRAME_LENGTH);
-                // inputBuffer.push(chunk);
-
-                // let int16Arr: Int16Array = new Int16Array(Buffer.concat(inputBuffer));
-                // const frames = chunkArray(int16Arr, FRAME_LENGTH);
-
-                if (frames[frames.length - 1].length !== FRAME_LENGTH) {
-                    inputBuffer = frames.pop();
-                }
-
-                for (const frame of frames) {
+                // runs porcupine on each audio frame to detect hotword
+                for (const frame of normalizedFrames) {
                     hotwordDetected = detectHotword(frame, porcupine);
                     if (hotwordDetected) {
+                        detectedBuffer.push(chunk);
                         const embed = createBasicEmbed("Hotword detected");
                         interaction.channel!.send({ embeds: [embed] });
                     }
                 }
             } else {
-                outputBuffer.push(chunk);
+                detectedBuffer.push(chunk);
             }
         });
 
+        // once audio stream ends
         decodedStream.on("end", () => {
-            const inputAudio = Buffer.concat(outputBuffer);
+            const inputAudio = Buffer.concat(detectedBuffer);
 
             if (hotwordDetected) {
                 hotwordDetected = false;
@@ -77,8 +75,21 @@ export default function createRecognitionStream(
     });
 }
 
+// receives an array and normalizes to the appropriate size (in this case, converts to arrays of size FRAME_LENGTH)
+// from: https://github.com/Picovoice/porcupine/blob/master/binding/nodejs/src/wave_util.ts#L46
 function chunkArray(array: any, size: number): Int16Array[] {
     return Array.from({ length: Math.ceil(array.length / size) }, (v, index) =>
         array.slice(index * size, index * size + size)
     );
+}
+
+// pass a buffer chunk to convert into a 'pseudo' Int16array for porcupine processing
+function bufferToInt16(buffer: Buffer) {
+    const int16Array = [];
+
+    for (let i = 0; i < buffer.length; i += 2) {
+        int16Array.push(buffer.readInt16LE(i));
+    }
+
+    return int16Array;
 }

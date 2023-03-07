@@ -1,14 +1,20 @@
 import { VoiceReceiver, EndBehaviorType } from "@discordjs/voice";
-import { OpusEncoder } from "@discordjs/opus";
 import detectHotword from "./detectHotword";
 import prism from "prism-media";
+import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
 
-export default function createListeningStream(receiver: VoiceReceiver, userId: string) {
+export default function createListeningStream(
+    receiver: VoiceReceiver,
+    userId: string,
+    porcupine: Porcupine
+) {
     return new Promise((resolve, reject) => {
-        const encoder = new OpusEncoder(16000, 1);
-        const inputBuffer = [];
-        const outputBuffer: Buffer[] = [];
+        // instantiate porcupine (hotword detection)
+        const FRAME_LENGTH = porcupine.frameLength;
+
         let hotwordDetected = false;
+        let inputBuffer: any = [];
+        const outputBuffer: Buffer[] = [];
 
         // creates a readable stream of opus packets from user voice
         const opusStream = receiver.subscribe(userId, {
@@ -23,15 +29,30 @@ export default function createListeningStream(receiver: VoiceReceiver, userId: s
         opusStream.pipe(decodedStream);
 
         decodedStream.on("data", (chunk) => {
-            const decodedChunk = chunk;
-
             if (!hotwordDetected) {
-                inputBuffer.push(decodedChunk);
-                hotwordDetected = detectHotword(decodedChunk);
+                let newFrames16 = new Array(chunk.length / 2);
+                for (let i = 0; i < chunk.length; i += 2) {
+                    newFrames16[i / 2] = chunk.readInt16LE(i);
+                }
+
+                inputBuffer = inputBuffer.concat(newFrames16);
+                let frames = chunkArray(inputBuffer, FRAME_LENGTH);
+                // inputBuffer.push(chunk);
+
+                // let int16Arr: Int16Array = new Int16Array(Buffer.concat(inputBuffer));
+                // const frames = chunkArray(int16Arr, FRAME_LENGTH);
+
+                if (frames[frames.length - 1].length !== FRAME_LENGTH) {
+                    inputBuffer = frames.pop();
+                }
+
+                for (const frame of frames) {
+                    hotwordDetected = detectHotword(frame, porcupine);
+                }
             }
 
             if (hotwordDetected) {
-                outputBuffer.push(decodedChunk);
+                outputBuffer.push(chunk);
             }
         });
 
@@ -39,15 +60,22 @@ export default function createListeningStream(receiver: VoiceReceiver, userId: s
             const inputAudio = Buffer.concat(outputBuffer);
 
             if (hotwordDetected) {
-                // hotwordDetected = false;
+                hotwordDetected = false;
                 resolve(inputAudio);
             }
 
             resolve([]);
         });
 
-        // decodedStream.on("error", (error) => {
-        //     reject(new Error("something went wrong"));
-        // });
+        decodedStream.on("error", (error) => {
+            console.log(error);
+            reject(new Error("something went wrong"));
+        });
     });
+}
+
+function chunkArray(array: any, size: number): Int16Array[] {
+    return Array.from({ length: Math.ceil(array.length / size) }, (v, index) =>
+        array.slice(index * size, index * size + size)
+    );
 }

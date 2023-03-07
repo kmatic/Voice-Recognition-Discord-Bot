@@ -1,5 +1,5 @@
 const speech = require("@google-cloud/speech");
-// import * as speech from "@google-cloud/speech";
+// import speech from "@google-cloud/speech";
 
 export default async function transcribeAudio(inputAudio: Buffer) {
     // instantiate google cloud speech client

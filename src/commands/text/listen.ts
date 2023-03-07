@@ -4,6 +4,7 @@ import { NotUserChannel } from "../../utils/responses";
 import createListeningStream from "../../utils/createListeningStream";
 import transcribeAudio from "../../utils/transcribeAudio";
 import dispatchVoiceCommand from "../voice/dispatchVoiceCommand";
+import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
 
 export default {
     data: new SlashCommandBuilder()
@@ -66,18 +67,23 @@ export default {
             }
         });
 
-        const receiver = connection.receiver;
-
         client.listenConnection.set(member.guild.id, member.user.id);
+
+        const porcupine = initPorcupine();
+        const receiver = connection.receiver;
 
         receiver.speaking.on("start", async (userId) => {
             console.log(`User ${userId} started speaking`);
             if (userId === client.listenConnection.get(member.guild.id)) {
                 let transcription = "";
 
-                const inputAudio = (await createListeningStream(receiver, userId)) as Buffer;
+                const inputAudio = (await createListeningStream(
+                    receiver,
+                    userId,
+                    porcupine
+                )) as Buffer;
 
-                if (inputAudio) {
+                if (inputAudio.length > 0) {
                     transcription = await transcribeAudio(inputAudio);
                 }
 
@@ -90,3 +96,11 @@ export default {
         );
     },
 };
+
+function initPorcupine() {
+    // instantiate porcupine (hotword detection)
+    const accessKey = process.env.PICOVOICE_ACCESS_KEY as string;
+    const porcupine = new Porcupine(accessKey, [BuiltinKeyword.BUMBLEBEE], [0.65]);
+
+    return porcupine;
+}

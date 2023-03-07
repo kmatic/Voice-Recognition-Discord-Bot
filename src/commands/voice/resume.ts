@@ -1,6 +1,6 @@
 import { CommandInteraction, GuildMember } from "discord.js";
 import { getVoiceConnection, VoiceConnectionReadyState } from "@discordjs/voice";
-import { NotBotPlaying } from "src/utils/responses";
+import { createBasicEmbed } from "../../utils/embeds";
 
 export default {
     data: {
@@ -9,17 +9,20 @@ export default {
     },
 
     async execute(interaction: CommandInteraction, search: string) {
+        let embed;
         const member = interaction.member as GuildMember;
         const connection = getVoiceConnection(member.guild.id);
 
         const state = connection!.state as VoiceConnectionReadyState;
 
         if (state.subscription?.player.state.status !== "paused") {
-            return await interaction.channel!.send(`**Bot is not currently playing anything!**`);
+            embed = createBasicEmbed("**Bot is not currently playing anything!**");
+            return await interaction.channel!.send({ embeds: [embed] });
         }
 
         state.subscription.player.unpause();
 
-        return await interaction.channel!.send(`**Audio has been resumed**`);
+        embed = createBasicEmbed("**Audio has been resumed**");
+        return await interaction.channel!.send({ embeds: [embed] });
     },
 };

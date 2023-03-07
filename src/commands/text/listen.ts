@@ -1,11 +1,11 @@
 import { SlashCommandBuilder, CommandInteraction, GuildMember, Client } from "discord.js";
 import { joinVoiceChannel, VoiceConnectionStatus, entersState } from "@discordjs/voice";
-import { NotUserChannel } from "../../utils/responses";
 import createRecognitionStream from "../../utils/createRecognitionStream";
 import transcribeAudio from "../../utils/transcribeAudio";
 import dispatchVoiceCommand from "../voice/dispatchVoiceCommand";
 import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
 import speech from "@google-cloud/speech";
+import { createBasicEmbed } from "../../utils/embeds";
 
 export default {
     data: new SlashCommandBuilder()
@@ -13,13 +13,23 @@ export default {
         .setDescription("Connects and listen to audio in voice channel"),
 
     async execute(interaction: CommandInteraction) {
+        let embed;
         const member = interaction.member as GuildMember;
         const client = interaction.client as Client;
         const existingListen = client.listenConnection.get(member.guild.id);
 
-        if (!member.voice.channel) return await NotUserChannel(interaction);
+        if (!member.voice.channel) {
+            embed = createBasicEmbed(
+                "**You must be connected to a voice channel to use this command**"
+            );
+            return await interaction.reply({ embeds: [embed] });
+        }
         // check if bot is already listening to a user
-        if (existingListen) return await interaction.reply(`**Already listening to a user**`);
+        if (existingListen)
+            return await interaction.reply({
+                content: `**Already listening to a user**`,
+                ephemeral: true,
+            });
 
         // join voice channel user is in
         const connection = joinVoiceChannel({
@@ -95,9 +105,10 @@ export default {
             }
         });
 
-        return await interaction.reply(
+        embed = createBasicEmbed(
             `**Bot has joined the channel ${member.voice.channel.name} and is now listening to ${member.user.tag} for commands**`
         );
+        return await interaction.reply({ embeds: [embed] });
     },
 };
 

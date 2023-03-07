@@ -1,6 +1,6 @@
 import { Client, CommandInteraction, GuildMember } from "discord.js";
 import playQueue from "../../utils/playQueue";
-import { createQueueEmbed } from "../../utils/embeds";
+import { createQueueEmbed, createBasicEmbed } from "../../utils/embeds";
 import getYoutubeInfo from "../../utils/getYoutubeInfo";
 
 export default {
@@ -10,17 +10,20 @@ export default {
     },
 
     async execute(interaction: CommandInteraction, search: string) {
+        let embed;
         const member = interaction.member as GuildMember;
         const client = interaction.client as Client;
 
         if (search === "") {
-            return await interaction.channel!.send(`**Did not receive a song to search**`);
+            embed = createBasicEmbed(`**Did not receive a song to search**`);
+            return await interaction.channel!.send({ embeds: [embed] });
         }
 
         const song = await getYoutubeInfo(search);
 
         if (!song.url) {
-            return await interaction.channel!.send("**Could not find the given video/song");
+            embed = createBasicEmbed(`**Did not receive a song to search**`);
+            return await interaction.channel!.send({ embeds: [embed] });
         }
 
         const queue = client.queueCollection.get(member.guild.id);

@@ -67,10 +67,11 @@ export default {
             }
         });
 
-        client.listenConnection.set(member.guild.id, member.user.id);
-
         const porcupine = initPorcupine();
         const receiver = connection.receiver;
+
+        client.listenConnection.set(member.guild.id, member.user.id);
+        client.porcupineInstance.set(member.guild.id, porcupine);
 
         receiver.speaking.on("start", async (userId) => {
             console.log(`User ${userId} started speaking`);

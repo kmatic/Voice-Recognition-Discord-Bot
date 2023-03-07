@@ -1,7 +1,7 @@
 import { VoiceReceiver, EndBehaviorType } from "@discordjs/voice";
 import detectHotword from "./detectHotword";
 import prism from "prism-media";
-import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
+import { Porcupine } from "@picovoice/porcupine-node";
 
 export default function createListeningStream(
     receiver: VoiceReceiver,
@@ -9,9 +9,7 @@ export default function createListeningStream(
     porcupine: Porcupine
 ) {
     return new Promise((resolve, reject) => {
-        // instantiate porcupine (hotword detection)
         const FRAME_LENGTH = porcupine.frameLength;
-
         let hotwordDetected = false;
         let inputBuffer: any = [];
         const outputBuffer: Buffer[] = [];

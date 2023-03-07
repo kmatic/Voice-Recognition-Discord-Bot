@@ -18,9 +18,13 @@ export default {
             return await NotBotChannel(interaction);
         }
 
+        const porcupine = client.porcupineInstance.get(member.guild.id);
+
+        porcupine.release();
         connection.destroy(); // destroys voice connection
         client.queueCollection.delete(member.guild.id); // clears song queue for guildId
         client.listenConnection.delete(member.guild.id); // clears any listening connections
+        client.porcupineInstance.delete(member.guild.id); // clears porcupine instance after releasing resources
 
         return await interaction.reply(`**Bot has disconnected from the channel**`);
     },

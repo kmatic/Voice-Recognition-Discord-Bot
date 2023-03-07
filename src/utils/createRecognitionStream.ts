@@ -3,7 +3,7 @@ import detectHotword from "./detectHotword";
 import prism from "prism-media";
 import { Porcupine } from "@picovoice/porcupine-node";
 
-export default function createListeningStream(
+export default function createRecognitionStream(
     receiver: VoiceReceiver,
     userId: string,
     porcupine: Porcupine

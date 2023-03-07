@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, CommandInteraction, GuildMember, Client } from "discord.js";
 import { joinVoiceChannel, VoiceConnectionStatus, entersState } from "@discordjs/voice";
 import { NotUserChannel } from "../../utils/responses";
-import createListeningStream from "../../utils/createListeningStream";
+import createRecognitionStream from "../../utils/createRecognitionStream";
 import transcribeAudio from "../../utils/transcribeAudio";
 import dispatchVoiceCommand from "../voice/dispatchVoiceCommand";
 import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
@@ -81,7 +81,7 @@ export default {
             if (userId === client.listenConnection.get(member.guild.id)) {
                 let transcription = "";
 
-                const inputAudio = (await createListeningStream(
+                const inputAudio = (await createRecognitionStream(
                     receiver,
                     userId,
                     porcupine

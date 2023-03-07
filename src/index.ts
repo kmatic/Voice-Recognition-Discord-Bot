@@ -11,6 +11,7 @@ declare module "discord.js" {
         queueCollection: Collection<unknown, any>;
         listenConnection: Collection<unknown, any>;
         porcupineInstance: Collection<unknown, any>;
+        gcSpeechInstance: Collection<unknown, any>;
     }
 }
 
@@ -27,6 +28,7 @@ client.queueCollection = new Collection();
 client.listenConnection = new Collection();
 client.voiceCommands = new Collection();
 client.porcupineInstance = new Collection();
+client.gcSpeechInstance = new Collection();
 
 const textCommandsPath = path.join(__dirname, "commands/text");
 const textCommandFiles = fs.readdirSync(textCommandsPath).filter((file) => file.endsWith(".ts"));

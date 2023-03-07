@@ -5,6 +5,7 @@ import createListeningStream from "../../utils/createListeningStream";
 import transcribeAudio from "../../utils/transcribeAudio";
 import dispatchVoiceCommand from "../voice/dispatchVoiceCommand";
 import { Porcupine, BuiltinKeyword } from "@picovoice/porcupine-node";
+import speech from "@google-cloud/speech";
 
 export default {
     data: new SlashCommandBuilder()
@@ -68,10 +69,12 @@ export default {
         });
 
         const porcupine = initPorcupine();
+        const speechClient = new speech.SpeechClient(); // auth with ADC
         const receiver = connection.receiver;
 
         client.listenConnection.set(member.guild.id, member.user.id);
         client.porcupineInstance.set(member.guild.id, porcupine);
+        client.gcSpeechInstance.set(member.guild.id, speechClient);
 
         receiver.speaking.on("start", async (userId) => {
             console.log(`User ${userId} started speaking`);
@@ -85,7 +88,7 @@ export default {
                 )) as Buffer;
 
                 if (inputAudio.length > 0) {
-                    transcription = await transcribeAudio(inputAudio);
+                    transcription = await transcribeAudio(inputAudio, speechClient);
                 }
 
                 if (transcription) dispatchVoiceCommand(transcription, interaction);
@@ -101,7 +104,7 @@ export default {
 function initPorcupine() {
     // instantiate porcupine (hotword detection)
     const accessKey = process.env.PICOVOICE_ACCESS_KEY as string;
-    const porcupine = new Porcupine(accessKey, [BuiltinKeyword.BUMBLEBEE], [0.65]);
+    const porcupine = new Porcupine(accessKey, [BuiltinKeyword.BUMBLEBEE], [0.75]);
 
     return porcupine;
 }

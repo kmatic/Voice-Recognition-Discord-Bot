@@ -19,12 +19,15 @@ export default {
         }
 
         const porcupine = client.porcupineInstance.get(member.guild.id);
+        const gcClient = client.gcSpeechInstance.get(member.guild.id);
 
         porcupine.release();
+        gcClient.close();
         connection.destroy(); // destroys voice connection
         client.queueCollection.delete(member.guild.id); // clears song queue for guildId
         client.listenConnection.delete(member.guild.id); // clears any listening connections
         client.porcupineInstance.delete(member.guild.id); // clears porcupine instance after releasing resources
+        client.gcSpeechInstance.delete(member.guild.id);
 
         return await interaction.reply(`**Bot has disconnected from the channel**`);
     },

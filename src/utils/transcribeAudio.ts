@@ -1,10 +1,6 @@
-const speech = require("@google-cloud/speech");
 // import speech from "@google-cloud/speech";
 
-export default async function transcribeAudio(inputAudio: Buffer) {
-    // instantiate google cloud speech client
-    const client = new speech.SpeechClient(); // use auth with ADC
-
+export default async function transcribeAudio(inputAudio: Buffer, client: any) {
     const config = {
         encoding: "LINEAR16",
         sampleRateHertz: 16000,

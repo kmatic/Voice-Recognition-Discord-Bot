@@ -2,11 +2,14 @@ import { VoiceReceiver, EndBehaviorType } from "@discordjs/voice";
 import detectHotword from "./detectHotword";
 import prism from "prism-media";
 import { Porcupine } from "@picovoice/porcupine-node";
+import { CommandInteraction } from "discord.js";
+import { createBasicEmbed } from "./embeds";
 
 export default function createRecognitionStream(
     receiver: VoiceReceiver,
     userId: string,
-    porcupine: Porcupine
+    porcupine: Porcupine,
+    interaction: CommandInteraction
 ) {
     return new Promise((resolve, reject) => {
         const FRAME_LENGTH = porcupine.frameLength;
@@ -46,10 +49,12 @@ export default function createRecognitionStream(
 
                 for (const frame of frames) {
                     hotwordDetected = detectHotword(frame, porcupine);
+                    if (hotwordDetected) {
+                        const embed = createBasicEmbed("Hotword detected");
+                        interaction.channel!.send({ embeds: [embed] });
+                    }
                 }
-            }
-
-            if (hotwordDetected) {
+            } else {
                 outputBuffer.push(chunk);
             }
         });

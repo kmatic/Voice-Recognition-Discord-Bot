@@ -94,7 +94,8 @@ export default {
                 const inputAudio = (await createRecognitionStream(
                     receiver,
                     userId,
-                    porcupine
+                    porcupine,
+                    interaction
                 )) as Buffer;
 
                 if (inputAudio.length > 0) {
@@ -108,7 +109,16 @@ export default {
         embed = createBasicEmbed(
             `**Bot has joined the channel ${member.voice.channel.name} and is now listening to ${member.user.tag} for commands**`
         );
-        return await interaction.reply({ embeds: [embed] });
+
+        await interaction.reply({
+            embeds: [
+                createBasicEmbed(
+                    "Voice recognition service firing up...please wait a moment before initiating any commands"
+                ),
+            ],
+        });
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        return await interaction.editReply({ embeds: [embed] });
     },
 };
 

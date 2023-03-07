@@ -22,7 +22,7 @@ export default {
 
         state.subscription.player.pause();
 
-        embed = embed = createBasicEmbed("*Audio has been paused**");
+        embed = embed = createBasicEmbed("**Audio has been paused**");
         return await interaction.channel!.send({ embeds: [embed] });
     },
 };

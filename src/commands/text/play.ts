@@ -12,8 +12,7 @@ import {
     entersState,
 } from "@discordjs/voice";
 import getYoutubeInfo from "../../utils/getYoutubeInfo";
-import { createQueueEmbed } from "../../utils/embeds";
-import { NotUserChannel, NotBotChannel } from "../../utils/responses";
+import { createBasicEmbed, createQueueEmbed } from "../../utils/embeds";
 import playQueue from "../../utils/playQueue";
 
 export default {
@@ -25,14 +24,21 @@ export default {
         ),
 
     async execute(interaction: CommandInteraction) {
+        let embed;
         const options = interaction.options as CommandInteractionOptionResolver;
         const member = interaction.member as GuildMember;
         const client = interaction.client as Client;
         const connection = getVoiceConnection(member.guild.id);
 
-        if (!member.voice.channel) return await NotUserChannel(interaction);
+        if (!member.voice.channel) {
+            embed = createBasicEmbed(
+                "You must be connected to a voice channel to use this command"
+            );
+            return await interaction.reply({ embeds: [embed] });
+        }
         if (connection && connection.joinConfig.channelId !== member.voice.channelId) {
-            return await NotBotChannel(interaction);
+            embed = createBasicEmbed("Bot is not currently connected to this voice channel");
+            return await interaction.reply({ embeds: [embed] });
         }
 
         if (!connection) {
@@ -81,7 +87,10 @@ export default {
         const search = options.getString("search")!;
         const song = await getYoutubeInfo(search);
 
-        if (!song.url) return await interaction.reply("Could not find the given video/song");
+        if (!song.url) {
+            embed = createBasicEmbed("Could not find the given video/song");
+            return await interaction.reply({ embeds: [embed] });
+        }
 
         const queue = client.queueCollection.get(member.guild.id);
 

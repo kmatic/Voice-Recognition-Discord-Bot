@@ -25,3 +25,9 @@ export function createQueueEmbed(info: Snippet, url: string, position: number) {
 
     return queueEmbed;
 }
+
+export function createBasicEmbed(text: string) {
+    const basicEmbed = new EmbedBuilder().setColor(0x2cc970).setTitle(text);
+
+    return basicEmbed;
+}

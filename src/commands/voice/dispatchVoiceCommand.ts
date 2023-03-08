@@ -1,4 +1,5 @@
 import { CommandInteraction } from "discord.js";
+import { createBasicEmbed } from "../../utils/embeds";
 
 export default async function dispatchVoiceCommand(
     transcription: string,
@@ -10,17 +11,15 @@ export default async function dispatchVoiceCommand(
     const command = interaction.client.voiceCommands.get(transcriptionCommand);
 
     if (!command) {
+        const embed = createBasicEmbed(`No commands matching ${transcriptionCommand} was found`);
         console.error(`No commands matching ${transcriptionCommand} was found.`);
-        return;
+        return await interaction.channel!.send({ embeds: [embed] });
     }
 
     try {
         await command.execute(interaction, transcriptionArray.join(" "));
     } catch (error) {
         console.error(error);
-        await interaction.reply({
-            content: "There was an error while executing this command!",
-            ephemeral: true,
-        });
+        await interaction.channel!.send("There was an error while executing this command!");
     }
 }

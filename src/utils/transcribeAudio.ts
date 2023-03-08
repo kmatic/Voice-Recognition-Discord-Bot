@@ -1,3 +1,4 @@
+// transcribes audio data using google cloud speech-to-text client
 export default async function transcribeAudio(inputAudio: Buffer, client: any) {
     const config = {
         encoding: "LINEAR16",

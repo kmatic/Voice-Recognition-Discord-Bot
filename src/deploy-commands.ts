@@ -1,3 +1,5 @@
+// This script deploys the commands registered under commands/text to the bot in the provided GUILD_ID.
+// This can be reworked to install globally on all guilds the bot is in
 import { REST, Routes } from "discord.js";
 import * as fs from "fs";
 import * as path from "path";

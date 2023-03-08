@@ -107,7 +107,7 @@ export default {
         });
 
         embed = createBasicEmbed(
-            `Bot has joined the channel ${member.voice.channel.name} and is now listening to ${member.user.tag} for commands`
+            `Bot has joined the channel ${member.voice.channel.name} and is now listening to ${member.user.tag}. Say "Bumblebee" before initiating any commands!`
         );
 
         await interaction.reply({

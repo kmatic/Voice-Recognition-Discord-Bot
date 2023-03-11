@@ -11,7 +11,7 @@ const { BOT_TOKEN, CLIENT_ID, GUILD_ID } = process.env;
 
 const commands = [];
 const commandsPath = path.join(__dirname, "commands/text");
-const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith("ts"));
+const commandFiles = fs.readdirSync(commandsPath);
 
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);

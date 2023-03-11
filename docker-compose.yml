@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      target: production
+    volumes:
+      - type: bind
+        source: ~/.config/gcloud/application_default_credentials.json
+        target: /tmp/keys/ADC.json
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      CLIENT_ID: ${CLIENT_ID}
+      GUILD_ID: ${GUILD_ID}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
+      PICOVOICE_ACCESS_KEY: ${PICOVOICE_ACCESS_KEY}
+      GOOGLE_APPLICATION_CREDENTIALS: /tmp/keys/ADC.json
+    restart:
+      always
+

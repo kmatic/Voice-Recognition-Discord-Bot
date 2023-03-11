@@ -31,15 +31,15 @@ client.porcupineInstance = new Collection();
 client.gcSpeechInstance = new Collection();
 
 const textCommandsPath = path.join(__dirname, "commands/text");
-const textCommandFiles = fs.readdirSync(textCommandsPath).filter((file) => file.endsWith(".ts"));
+const textCommandFiles = fs.readdirSync(textCommandsPath);
 
 const voiceCommandsPath = path.join(__dirname, "commands/voice");
-const voiceCommandFiles = fs.readdirSync(voiceCommandsPath).filter((file) => {
-    return file !== "dispatchVoiceCommand.ts" && file.endsWith(".ts");
-});
+const voiceCommandFiles = fs
+    .readdirSync(voiceCommandsPath)
+    .filter((file) => !file.includes("dispatchVoiceCommand"));
 
 const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith(".ts"));
+const eventFiles = fs.readdirSync(eventsPath);
 
 // register slash(text) commands
 for (const file of textCommandFiles) {

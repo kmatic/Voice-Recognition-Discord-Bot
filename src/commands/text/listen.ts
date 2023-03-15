@@ -62,22 +62,6 @@ export default {
             }
         });
 
-        connection.on("stateChange", (oldState, newState) => {
-            console.log(
-                "join",
-                "Connection state change from",
-                oldState.status,
-                "to",
-                newState.status
-            );
-            if (
-                oldState.status === VoiceConnectionStatus.Ready &&
-                newState.status === VoiceConnectionStatus.Connecting
-            ) {
-                connection.configureNetworking();
-            }
-        });
-
         const porcupine = initPorcupine();
         const speechClient = new speech.SpeechClient(); // auth with ADC
         const receiver = connection.receiver;
